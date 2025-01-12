@@ -15,6 +15,8 @@ public abstract class A_TowerShoot : MonoBehaviour
     protected float time = 0;
     protected Animator animator;
 
+
+
     #region RangeChecking
     protected void checkRange()
     {
@@ -53,6 +55,12 @@ public abstract class A_TowerShoot : MonoBehaviour
         }
     }
 
+
+    protected EnemyData InRange()
+    {
+        return EnemyWaves.Enemies.FirstOrDefault(x => (Vector3.Distance(x.transform.position, transform.position) < range))?.GetComponent<EnemyData>() 
+            ?? null;
+    }
     void pickTargetData()
     {
         targetData = inRange.First().GetComponent<EnemyData>();
@@ -62,9 +70,9 @@ public abstract class A_TowerShoot : MonoBehaviour
 
     protected void shoot()
     {
-        targetData.TakeDamage(EnemyData.TowerColors.Blue);
-        lookAt2d();
-        triggerAnim();
+      // targetData.TakeDamage(.Blue);
+       // lookAt2d();
+       // triggerAnim();
     }
 
     #region ActionDelegates
@@ -94,18 +102,18 @@ public abstract class A_TowerShoot : MonoBehaviour
     #endregion
 
     #region Anim
-    void triggerAnim()
+    protected void TryAnimation(string stateName = "Shoot")
     {
-        if (animator == null)
+
+        if(transform.GetChild(0).TryGetComponent<Animator>(out animator))
         {
-            animator = transform.GetChild(0).GetComponent<Animator>();
-        }
-        animator.Play("Shoot");
+            animator.Play(stateName);
+        }                
     }
 
-    void lookAt2d()
+    protected void PointAtEnemy(EnemyData enemyData)
     {
-       transform.rotation =  Quaternion.LookRotation(Vector3.forward, targetData.gameObject.transform.position - transform.position);
+       transform.rotation =  Quaternion.LookRotation(Vector3.forward, enemyData.gameObject.transform.position - transform.position);
     }
     
     #endregion

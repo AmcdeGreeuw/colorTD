@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utils;
 public class UIClickHandler : MonoBehaviour
@@ -14,6 +15,8 @@ public class UIClickHandler : MonoBehaviour
     {
         towerPlace = gameObject.GetComponent<TowerPlace>();
     }
+
+
 
     public void MainScreenPanelButtons(string name)
     {
@@ -31,7 +34,13 @@ public class UIClickHandler : MonoBehaviour
     }
     public void TowerPlacementButtons(GameObject game0bject)
     {
+        Debug.Log($"{game0bject.name}");
         towerPlace.ButtonClickedAction(Instantiate(game0bject));
+    }
+
+    public void PanelPlacementMouseClick(BaseEventData eventData)
+    {
+
     }
 
     public void NextWave()

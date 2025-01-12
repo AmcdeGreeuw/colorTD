@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 
@@ -8,11 +9,15 @@ using UnityEngine;
 public class EnemyData : MonoBehaviour
 {
     public float Speed { get; private set; }  //movementSpeed of the enemy
+
+    public List<Color> Colors { get; private set; } = new List<Color> { Color.white, Color.blue, Color.yellow };
+
     Color[] TowerColorList { get; } = { new Color(1, 0, 0), new Color(1, 1, 0), new Color(0, 0, 1) };
     Color[] EnemyColorList { get; } = { new Color(0, 1, 0), new Color(1, 0.6f, 0), new Color(0.6f, 0, 1) };
-    TypeEnemy Type;
-    Color TargetColor; //the color of the enemy
-    List<int> HpValues = new List<int> {  0 , 0 , 0 };
+    TypeEnemy MyType;
+    Color MyColor; //the color of the enemy
+    int Health = 0;
+
     SpriteRenderer border;
     SpriteRenderer inside;
     float healthRemoveAmount;
@@ -26,49 +31,24 @@ public class EnemyData : MonoBehaviour
         Normal, Big, Small
     }
 
-     enum Colors  //for the color array
-    {
-        Green, Purple, Orange
-    }
-     
-    public enum TowerColors
-    {
-        Red, Yellow, Blue
-    }
+
     private void Start()
     {
-        border = transform.Find("Border").GetComponent<SpriteRenderer>();
-        inside = transform.Find("Inside").GetComponent<SpriteRenderer>();
+        transform.Find("Border")?.TryGetComponent<SpriteRenderer>(out border);
+        transform.Find("Inside")?.TryGetComponent<SpriteRenderer>(out inside);
 
-        Colors colorIndex = (Colors)UnityEngine.Random.Range(0, EnemyColorList.Length);
-        TargetColor = EnemyColorList[(int)colorIndex];
+        SpanWithRandomValues();
 
-        inside.color = currentColor = Color.white;
-        border.color = TargetColor;
+        // Colors colorIndex = (Colors)UnityEngine.Random.Range(0, EnemyColorList.Length);
+        // TargetColor = EnemyColorList[(int)colorIndex];
 
-        Type = (TypeEnemy)UnityEngine.Random.Range(0, 3);
-        
-        int health = 0;
-        switch (Type)
-        {
-            
-            case TypeEnemy.Normal:
-                Speed = 2f * TEMPORARYINTFORDEBUG;
-                health = 2;
-                break;
-            case TypeEnemy.Big:
-                Speed = 1f * TEMPORARYINTFORDEBUG;
-                health = 4;
-                break;
-            case TypeEnemy.Small:
-                Speed = 3f * TEMPORARYINTFORDEBUG;
-                health = 1;
-                break;
-            default:
-                Debug.LogError($"invalid enemyType:{Type}");
-                break;
-        }
-        HpValues[2] = health;
+        // inside.color = currentColor = Color.white;
+        // border.color = TargetColor;
+
+        //  Type = (TypeEnemy)UnityEngine.Random.Range(0, 3);
+
+
+        // HpValues[2] = health;
         //if (colorIndex == Colors.Green)
         //{
         //    HpValues[(int)TowerColors.Yellow] = health;
@@ -86,11 +66,52 @@ public class EnemyData : MonoBehaviour
         //    print("NoColorIndexException");
         //}
         //colorDevide = 4;//helth;
-        
+
     }
+
+    private void SpanWithRandomValues()
+    {
+        // set color and speed enz.
+        var index = UnityEngine.Random.Range(0, 3);
+        MyColor = Colors[index];
+        MyType = (TypeEnemy)index;
+
+        var settings = GetHealthAndSpeedFromType(MyType);
+        Speed = settings.speed;
+        Health = settings.health;
+
+        inside.color = MyColor;
+    }
+
+    private (int health, float speed) GetHealthAndSpeedFromType(TypeEnemy typeEnemy)
+    {
+        int health = 0;
+        float speed = 0;
+
+        switch (typeEnemy)
+        {
+            case TypeEnemy.Normal:
+                speed = 2f * TEMPORARYINTFORDEBUG;
+                health = 2;
+                break;
+            case TypeEnemy.Big:
+                speed = 1f * TEMPORARYINTFORDEBUG;
+                health = 4;
+                break;
+            case TypeEnemy.Small:
+                speed = 3f * TEMPORARYINTFORDEBUG;
+                health = 1;
+                break;
+            default:
+                Debug.LogError($"invalid enemyType:{MyType}");
+                break;
+        }
+        return new(health, speed);
+    }
+
     private void Update()
     {
-        if (/*HpValues[(int)TowerColors.Red] == 0 && HpValues[(int)TowerColors.Yellow] == 0 &&*/ HpValues[(int)TowerColors.Blue] <= 0)
+        if (Health <= 0)
         {
             EnemyWaves.EnemyDestroyed("Player", gameObject);
         }
@@ -107,14 +128,19 @@ public class EnemyData : MonoBehaviour
         //    TakeDamage(TowerColors.Red);
         //}
     }
-    public void TakeDamage(TowerColors color)
-    { 
-        HpValues[(int)color] -= 1;
-        print(HpValues[(int)color]);
+    public void TakeDamage(Color color)
+    {
+
+        if (MyColor == color) {
+            Health--;
+        }
+
+       // HpValues[(int)color] -= 1;
+        //print(HpValues[(int)color]);
         //HpValues[HpValues.ElementAt((int)color).Key] -= 1;
         //float flippedValue = colorDevide - HpValues[HpValues.ElementAt((int)color).Key];
         //Color colorMultiplier = (TowerColorList[(int)color] / colorDevide) * flippedValue;
         //currentColor = Color.Lerp(colorMultiplier, currentColor, 1);
-        //inside.color = currentColor;
+        //inside.color = color;
     }
 }
